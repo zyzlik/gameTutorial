@@ -3,10 +3,13 @@ package com.tutorial.main;
 import java.awt.*;
 
 public class BasicEnemy extends GameObject {
-    public BasicEnemy(int x, int y, ID id) {
+    private Handler handler;
+
+    public BasicEnemy(int x, int y, ID id, Handler handler) {
         super(x, y, id);
         this.velX = 5;
         this.velY = 5;
+        this.handler = handler;
     }
 
     public void tick() {
@@ -19,10 +22,14 @@ public class BasicEnemy extends GameObject {
         if (this.x <= 0 || this.x >= Game.WIDTH - 16) {
             this.velX = -this.velX;
         }
+        this.handler.addObject(new Trail(this.x, this.y, ID.Trail, this.handler, Color.red, 16, 16, 0.01f));
     }
 
     public void render(Graphics g) {
         g.setColor(Color.red);
         g.fillRect(this.x, this.y, 16, 16);
+    }
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, 16, 16);
     }
 }

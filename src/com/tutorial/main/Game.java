@@ -5,20 +5,22 @@ import java.awt.*;
 import java.awt.image.BufferStrategy;
 
 public class Game extends Canvas implements Runnable {
-    public static final int WIDTH = 1000;
+    public static final int WIDTH = 800;
     public static final int HEIGHT = WIDTH / 12 * 9;
     private static final long serialVersionUID = 1550691097823471818L;
     private Thread thread;
     private boolean running = false;
     private Handler handler;
+    private HUD hud;
 
     public Game() {
         this.handler = new Handler();
+        this.hud = new HUD();
         this.addKeyListener(new KeyInput(this.handler));
         new Window(WIDTH, HEIGHT, "Let's build the game", this);
-        Player player = new Player(WIDTH / 2 - 32, HEIGHT / 2 - 32, ID.Player);
+        Player player = new Player(WIDTH / 2 - 32, HEIGHT / 2 - 32, ID.Player, handler);
         this.handler.addObject(player);
-        this.handler.addObject(new BasicEnemy(WIDTH / 2, 0, ID.BasicEnemy));
+        this.handler.addObject(new BasicEnemy(WIDTH / 2, 0, ID.BasicEnemy, handler));
     }
 
     public static void main(String args[]) {
@@ -41,6 +43,7 @@ public class Game extends Canvas implements Runnable {
     }
 
     public void run() {
+        this.requestFocus();
         int frames = 0;
         double unprocessedSeconds = 0;
         long previousTime = System.nanoTime();
@@ -52,7 +55,7 @@ public class Game extends Canvas implements Runnable {
             long currentTime = System.nanoTime();
             long passedTime = currentTime - previousTime;
             previousTime = currentTime;
-            unprocessedSeconds = unprocessedSeconds + passedTime / 1000000000.0
+            unprocessedSeconds = unprocessedSeconds + passedTime / 1000000000.0;
             int count = 0;
 
             while(unprocessedSeconds >= secondsForEachTick) {
@@ -77,7 +80,8 @@ public class Game extends Canvas implements Runnable {
     }
 
     private void tick() {
-        handler.tick();
+        this.handler.tick();
+        this.hud.tick();
     }
     private void render() {
         BufferStrategy bs = this.getBufferStrategy();
@@ -91,9 +95,21 @@ public class Game extends Canvas implements Runnable {
         g.setColor(Color.black);
         g.fillRect(0, 0, WIDTH, HEIGHT);
 
-        handler.render(g);
+        this.handler.render(g);
+        this.hud.render(g);
 
         g.dispose();
         bs.show();
+    }
+    public static int clamp(int var, int min, int max) {
+        if (var >= max) {
+            return max;
+        }
+        else if (var <= min) {
+            return min;
+        }
+        else {
+            return var;
+        }
     }
 }

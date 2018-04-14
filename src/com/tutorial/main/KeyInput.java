@@ -12,8 +12,10 @@ public class KeyInput extends KeyAdapter {
 
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
-        for (int i = 0; i < this.handler.objects.size(); i++) {
-            GameObject tempObject = this.handler.objects.get(i);
+        if (key == KeyEvent.VK_ESCAPE) {
+            System.exit(0);
+        }
+        for (GameObject tempObject: this.handler.objects) {
             if (tempObject.getId() == ID.Player) {
                 if (key == KeyEvent.VK_W) {
                     tempObject.setVelY(-5);
