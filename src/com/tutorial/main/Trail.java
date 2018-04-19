@@ -25,7 +25,7 @@ public class Trail extends GameObject {
 
     public void tick() {
         if (this.alpha > this.life) {
-            this.alpha -= this.life - 0.01f;
+            this.alpha -= (this.life - 0.01f);
         } else {
             this.handler.removeObject(this);
         }

@@ -4,12 +4,14 @@ import java.awt.*;
 
 public class BasicEnemy extends GameObject {
     private Handler handler;
+    private Color color;
 
-    public BasicEnemy(int x, int y, ID id, Handler handler) {
+    public BasicEnemy(int x, int y, ID id, Handler handler, Color color) {
         super(x, y, id);
         this.velX = 5;
         this.velY = 5;
         this.handler = handler;
+        this.color = color;
     }
 
     public void tick() {
@@ -22,11 +24,11 @@ public class BasicEnemy extends GameObject {
         if (this.x <= 0 || this.x >= Game.WIDTH - 16) {
             this.velX = -this.velX;
         }
-        this.handler.addObject(new Trail(this.x, this.y, ID.Trail, this.handler, Color.red, 16, 16, 0.01f));
+        this.handler.addObject(new Trail(this.x, this.y, ID.Trail, this.handler, this.color, 16, 16, 0.05f));
     }
 
     public void render(Graphics g) {
-        g.setColor(Color.red);
+        g.setColor(this.color);
         g.fillRect(this.x, this.y, 16, 16);
     }
     public Rectangle getBounds() {

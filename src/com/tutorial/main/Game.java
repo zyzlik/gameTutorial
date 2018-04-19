@@ -3,6 +3,7 @@ package com.tutorial.main;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.Random;
 
 public class Game extends Canvas implements Runnable {
     public static final int WIDTH = 800;
@@ -12,15 +13,22 @@ public class Game extends Canvas implements Runnable {
     private boolean running = false;
     private Handler handler;
     private HUD hud;
+    private Spawn spawner;
+    private Random r = new Random();
 
     public Game() {
         this.handler = new Handler();
         this.hud = new HUD();
+        this.spawner = new Spawn(this.handler, this.hud);
         this.addKeyListener(new KeyInput(this.handler));
         new Window(WIDTH, HEIGHT, "Let's build the game", this);
-        Player player = new Player(WIDTH / 2 - 32, HEIGHT / 2 - 32, ID.Player, handler);
+        Player player = new Player(WIDTH / 2 - 32, HEIGHT / 2 - 32, ID.Player, this.handler);
         this.handler.addObject(player);
-        this.handler.addObject(new BasicEnemy(WIDTH / 2, 0, ID.BasicEnemy, handler));
+        this.handler.addObject(new BasicEnemy(
+            this.r.nextInt(Game.WIDTH - 20),
+            this.r.nextInt(Game.HEIGHT - 20),
+            ID.BasicEnemy, this.handler, Color.red)
+        );
     }
 
     public static void main(String args[]) {
@@ -44,36 +52,29 @@ public class Game extends Canvas implements Runnable {
 
     public void run() {
         this.requestFocus();
+        long lastTime = System.nanoTime();
+        double amountOfTicks = 60.0;
+        double ns = 1000000000 / amountOfTicks;
+        double delta = 0;
+        long timer = System.currentTimeMillis();
         int frames = 0;
-        double unprocessedSeconds = 0;
-        long previousTime = System.nanoTime();
-        double secondsForEachTick = 1 / 60.0;
-        int tickCount = 0;
-        boolean ticked = false;
 
         while(running) {
-            long currentTime = System.nanoTime();
-            long passedTime = currentTime - previousTime;
-            previousTime = currentTime;
-            unprocessedSeconds = unprocessedSeconds + passedTime / 1000000000.0;
-            int count = 0;
-
-            while(unprocessedSeconds >= secondsForEachTick) {
+            long now = System.nanoTime();
+            delta += (now - lastTime) / ns;
+            lastTime = now;
+            while (delta >= 1) {
                 this.tick();
-                count++;
-                unprocessedSeconds -= secondsForEachTick;
-                ticked = true;
-                tickCount++;
-
-                if(tickCount % 60 == 0){
-                    previousTime += 1000;
-                    frames = 0;
-                }
+                delta--;
             }
-            if (ticked) {
+            if (running) {
                 this.render();
-                frames++;
-                ticked = false;
+            }
+            frames++;
+            if (System.currentTimeMillis() - timer > 1000) {
+                timer += 1000;
+                System.out.println(frames);
+                frames = 0;
             }
         }
         this.stop();
@@ -82,6 +83,7 @@ public class Game extends Canvas implements Runnable {
     private void tick() {
         this.handler.tick();
         this.hud.tick();
+        this.spawner.tick();
     }
     private void render() {
         BufferStrategy bs = this.getBufferStrategy();
